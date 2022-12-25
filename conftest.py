@@ -85,6 +85,7 @@ def add_stock(postgres_session):
             )
             batches_added.add(batch_id)
             skus_added.add(sku)
+        postgres_session.commit()
 
     yield _add_stock
 
