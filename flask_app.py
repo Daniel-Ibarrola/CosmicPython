@@ -6,6 +6,7 @@ import config
 import model
 import orm
 import repository
+import services
 
 
 orm.start_mappers()
@@ -20,19 +21,14 @@ def is_valid_sku(sku, batches):
 @app.route("/allocate", methods=["POST"])
 def allocate_endpoint():
     session = get_session()
-    batches = repository.SqlAlchemyRepository(session).list()
+    repo = repository.SqlAlchemyRepository(session)
     line = model.OrderLine(
         request.json["orderid"], request.json["sku"], request.json["qty"],
     )
 
-    if not is_valid_sku(line.sku, batches):
-        return {"message": f"Invalid sku {line.sku}"}, 400
-
     try:
-        batchref = model.allocate(line, batches)
-    except model.OutOfStock as exc:
+        batchref = services.allocate(line, repo, session)
+    except (model.OutOfStock, services.InvalidSku) as exc:
         return {"message": str(exc)}, 400
-
-    session.commit()
 
     return {"batchref": batchref}, 201
