@@ -58,6 +58,12 @@ class Batch:
         if line in self._allocations:
             self._allocations.remove(line)
 
+    def deallocate_orderid(self, orderid: str):
+        for line in self._allocations:
+            if line.orderid == orderid:
+                self._allocations.remove(line)
+                break
+
     @property
     def allocated_quantity(self) -> int:
         return sum(line.qty for line in self._allocations)
@@ -68,3 +74,6 @@ class Batch:
 
     def can_allocate(self, line: OrderLine) -> bool:
         return self.sku == line.sku and self.available_quantity >= line.qty
+
+    def has_line(self, orderid: str):
+        return len([a for a in self._allocations if a.orderid == orderid]) == 1

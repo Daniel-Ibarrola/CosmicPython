@@ -53,22 +53,44 @@ def test_commits():
     assert session.committed is True
 
 
-def test_deallocate_decrements_available_quantity():
+def test_deallocate_increments_available_quantity():
     repo, session = FakeRepository([]), FakeSession()
-    # TODO: you'll need to implement the services.add_batch method
     services.add_batch("b1", "BLUE-PLINTH", 100, None, repo, session)
     line = model.OrderLine("o1", "BLUE-PLINTH", 10)
     services.allocate(line, repo, session)
     batch = repo.get(reference="b1")
     assert batch.available_quantity == 90
-    # services.deallocate(...
-    ...
+
+    services.deallocate(line.orderid, line.sku, repo, session)
     assert batch.available_quantity == 100
 
 
-def test_deallocate_decrements_correct_quantity():
-    ...  #  TODO - check that we decrement the right sku
+def test_deallocate_increments_correct_quantity():
+    repo, session = FakeRepository([]), FakeSession()
+    services.add_batch("b1", "BLUE-PLINTH", 100, None, repo, session)
+    services.add_batch("r1", "RED-CHAIR", 100, None, repo, session)
+
+    line_1 = model.OrderLine("o1", "BLUE-PLINTH", 10)
+    line_2 = model.OrderLine("o2", "RED-CHAIR", 5)
+    services.allocate(line_1, repo, session)
+    services.allocate(line_2, repo, session)
+
+    services.deallocate(line_2.orderid, line_2.sku, repo, session)
+
+    batch_1 = repo.get(reference="b1")
+    batch_2 = repo.get(reference="r1")
+    assert batch_1.available_quantity == 90
+    assert batch_2.available_quantity == 100
 
 
 def test_trying_to_deallocate_unallocated_batch():
-    ...  #  TODO: should this error or pass silently? up to you.
+    batch = model.Batch("b1", "AREALSKU", 100, eta=None)
+    repo = FakeRepository([batch])
+    session = FakeSession()
+
+    unallocated_line = model.OrderLine("o1", "AREALSKU", 10)
+    with pytest.raises(services.UnallocatedLine,
+                       match="Line with id o1 has not been allocated"):
+        services.deallocate(
+            unallocated_line.orderid, unallocated_line.sku, repo, session
+        )
