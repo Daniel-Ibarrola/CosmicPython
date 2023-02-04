@@ -4,17 +4,17 @@ from allocation.service_layer import services, unit_of_work
 
 
 class FakeRepository(repository.AbstractRepository):
-    def __init__(self, batches):
-        self._batches = set(batches)
+    def __init__(self, products):
+        self._products = set(products)
 
     def add(self, batch):
-        self._batches.add(batch)
+        self._products.add(batch)
 
     def get(self, sku):
-        return next((p for p in self._batches if p.sku == sku), None)
+        return next((p for p in self._products if p.sku == sku), None)
 
     def list(self):
-        return list(self._batches)
+        return list(self._products)
 
 
 class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
