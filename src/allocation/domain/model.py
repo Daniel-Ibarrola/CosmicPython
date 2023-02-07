@@ -3,9 +3,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Optional, List, Set
 
-
-class OutOfStock(Exception):
-    pass
+from .events import OutOfStock
 
 
 class Product:
@@ -13,6 +11,7 @@ class Product:
         self.sku = sku
         self.batches = batches
         self.version_number = version_number
+        self.events = []
 
     def allocate(self, line: OrderLine) -> str:
         try:
@@ -21,7 +20,8 @@ class Product:
             self.version_number += 1
             return batch.reference
         except StopIteration:
-            raise OutOfStock(f"Out of stock for sku {line.sku}")
+            self.events.append(OutOfStock(self.sku))
+            return
 
 
 @dataclass(unsafe_hash=True)
