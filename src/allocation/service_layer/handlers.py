@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from allocation.adapters import email
-from allocation.domain import events, model
+from allocation.domain import events, commands, model
 from allocation.domain.model import OrderLine
 
 if TYPE_CHECKING:
@@ -13,7 +13,7 @@ class InvalidSku(Exception):
 
 
 def add_batch(
-    event: events.BatchCreated,
+    event: commands.CreateBatch,
     uow: unit_of_work.AbstractUnitOfWork,
 ):
     with uow:
@@ -28,7 +28,7 @@ def add_batch(
 
 
 def allocate(
-    event: events.AllocationRequired,
+    event: commands.Allocate,
     uow: unit_of_work.AbstractUnitOfWork,
 ) -> str:
     line = OrderLine(event.orderid, event.sku, event.qty)
@@ -42,7 +42,7 @@ def allocate(
 
 
 def change_batch_quantity(
-    event: events.BatchQuantityChanged,
+    event: commands.CreateBatch,
     uow: unit_of_work.AbstractUnitOfWork,
 ):
     with uow:
