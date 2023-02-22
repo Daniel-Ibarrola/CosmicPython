@@ -1,8 +1,8 @@
 # app
-sqlalchemy
-flask
+sqlalchemy==1.4.44
+flask==2.2.2
 psycopg2-binary
-redis
+redis==4.5.1
 
 # dev/tests
 pytest
